@@ -44,6 +44,7 @@ const refreshTokens = async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "None",
   };
 
   res.cookie("accessToken", newAccessToken, options);
