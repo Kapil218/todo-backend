@@ -5,7 +5,7 @@ import {
   generateRefreshToken,
 } from "../utils/jwtTokens.js";
 import ApiError from "../utils/ApiError.js";
-import asyncHandler from "../utils/asyncHandler.js";
+import asyncHandler from "../utils/AsyncHandler.js";
 
 const refreshTokens = async (req, res) => {
   const incomingRefreshToken =
