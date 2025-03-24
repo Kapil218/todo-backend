@@ -1,11 +1,8 @@
 import pg from "pg";
 
 const pool = new pg.Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DATABASE_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }  // Required for Render PostgreSQL
 });
 
 const connectDB = async () => {

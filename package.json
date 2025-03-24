@@ -2,10 +2,12 @@
   "name": "todo-app",
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon --env-file=.env index.js"
-  },
+"scripts": {
+  "start": "node index.js",
+  "dev": "nodemon --env-file=.env index.js",
+  "build": "npm r",
+  "postinstall": "npm install"
+},
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
