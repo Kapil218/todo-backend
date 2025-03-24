@@ -4,9 +4,9 @@
   "type": "module",
 "scripts": {
   "start": "node index.js",
-  "dev": "nodemon --env-file=.env index.js",
-  "postinstall": "npm install"
-},
+  "dev": "nodemon --env-file=.env index.js"
+}
+,
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
