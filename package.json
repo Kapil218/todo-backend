@@ -5,7 +5,6 @@
 "scripts": {
   "start": "node index.js",
   "dev": "nodemon --env-file=.env index.js",
-  "build": "npm r",
   "postinstall": "npm install"
 },
   "dependencies": {
