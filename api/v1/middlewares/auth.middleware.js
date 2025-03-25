@@ -61,7 +61,7 @@ const refreshTokens = async (req, res) => {
 };
 
 const authMiddleware = asyncHandler(async (req, res, next) => {
-  let accessToken =
+  const accessToken =
     req.cookies?.accessToken ||
     req.headers.authorization?.replace("Bearer ", "");
 
