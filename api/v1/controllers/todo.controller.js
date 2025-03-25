@@ -4,7 +4,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 import { pool } from "../../db/index.js";
 
 // Get all todos for a user
-const getAllTodosForUser = asyncHandler(async (req, res) => {
+const getAllTodosForUser = asyncHandler(async (req, res,next) => {
   const userId = req.user?.id; // Get user ID from authenticated request
 
   if (!userId) {
@@ -22,7 +22,7 @@ const getAllTodosForUser = asyncHandler(async (req, res) => {
 });
 
 // Add a new todo
-const addTodo = asyncHandler(async (req, res) => {
+const addTodo = asyncHandler(async (req, res, next) => {
   const userId = req.user?.id;
   const title = (req.body.title || "").trim();
   const description = (req.body.description || "").trim();
@@ -51,7 +51,7 @@ const addTodo = asyncHandler(async (req, res) => {
 });
 
 // Remove a todo
-const removeTodo = asyncHandler(async (req, res) => {
+const removeTodo = asyncHandler(async (req, res, next) => {
   const userId = req.user?.id;
   const { id } = req.params;
 

@@ -1,4 +1,4 @@
-import { pool } from "../../../db/index.js";
+import { pool } from "../../db/index.js";
 import { registerUser, loginUser } from "../controllers/user.controller.js";
 import { hashValue, compareValue } from "../utils/bcrypt.js";
 import {
@@ -7,7 +7,7 @@ import {
 } from "../utils/jwtTokens.js";
 import ApiError from "../utils/ApiError.js";
 
-jest.mock("../../../db/index.js", () => ({
+jest.mock("../../db/index.js", () => ({
   pool: {
     query: jest.fn(),
   },
@@ -26,6 +26,7 @@ jest.mock("../utils/jwtTokens.js", () => ({
 describe("User Controller", () => {
   let mockReq;
   let mockRes;
+  let mockNext;
 
   beforeEach(() => {
     mockReq = {
@@ -36,6 +37,7 @@ describe("User Controller", () => {
       json: jest.fn(),
       cookie: jest.fn().mockReturnThis(),
     };
+    mockNext = jest.fn();
     jest.clearAllMocks();
   });
 
@@ -59,8 +61,9 @@ describe("User Controller", () => {
         .mockResolvedValueOnce({ rowCount: 0 }) // User doesn't exist
         .mockResolvedValueOnce({ rows: [newUser], rowCount: 1 }); // User created
 
-      await registerUser(mockReq, mockRes);
+      await registerUser(mockReq, mockRes, mockNext);
 
+      expect(mockNext).not.toHaveBeenCalled(); // Ensure next is not called for successful operations
       expect(pool.query).toHaveBeenCalledTimes(2);
       expect(hashValue).toHaveBeenCalledWith(mockReq.body.password);
       expect(mockRes.status).toHaveBeenCalledWith(201);
@@ -79,7 +82,8 @@ describe("User Controller", () => {
         password: "",
       };
 
-      await expect(registerUser(mockReq, mockRes)).rejects.toThrow(ApiError);
+      await expect(registerUser(mockReq, mockRes, mockNext)).rejects.toThrow(ApiError);
+      expect(mockNext).toHaveBeenCalled(); // Ensure next is called for errors
     });
 
     it("should throw error if user already exists", async () => {
@@ -91,7 +95,8 @@ describe("User Controller", () => {
 
       pool.query.mockResolvedValueOnce({ rowCount: 1 }); // User exists
 
-      await expect(registerUser(mockReq, mockRes)).rejects.toThrow(ApiError);
+      await expect(registerUser(mockReq, mockRes, mockNext)).rejects.toThrow(ApiError);
+      expect(mockNext).toHaveBeenCalled(); // Ensure next is called for errors
     });
   });
 
@@ -118,8 +123,9 @@ describe("User Controller", () => {
       generateRefreshToken.mockResolvedValueOnce(refreshToken);
       pool.query.mockResolvedValueOnce({ rowCount: 1 }); // Update refresh token
 
-      await loginUser(mockReq, mockRes);
+      await loginUser(mockReq, mockRes, mockNext);
 
+      expect(mockNext).not.toHaveBeenCalled(); // Ensure next is not called for successful operations
       expect(pool.query).toHaveBeenCalledTimes(2);
       expect(compareValue).toHaveBeenCalledWith(
         mockReq.body.password,
@@ -141,7 +147,8 @@ describe("User Controller", () => {
         password: "",
       };
 
-      await expect(loginUser(mockReq, mockRes)).rejects.toThrow(ApiError);
+      await expect(loginUser(mockReq, mockRes, mockNext)).rejects.toThrow(ApiError);
+      expect(mockNext).toHaveBeenCalled(); // Ensure next is called for errors
     });
 
     it("should throw error if user not found", async () => {
@@ -152,7 +159,8 @@ describe("User Controller", () => {
 
       pool.query.mockResolvedValueOnce({ rowCount: 0 });
 
-      await expect(loginUser(mockReq, mockRes)).rejects.toThrow(ApiError);
+      await expect(loginUser(mockReq, mockRes, mockNext)).rejects.toThrow(ApiError);
+      expect(mockNext).toHaveBeenCalled(); // Ensure next is called for errors
     });
 
     it("should throw error if password is incorrect", async () => {
@@ -171,7 +179,8 @@ describe("User Controller", () => {
       pool.query.mockResolvedValueOnce({ rows: [user], rowCount: 1 });
       compareValue.mockResolvedValueOnce(false);
 
-      await expect(loginUser(mockReq, mockRes)).rejects.toThrow(ApiError);
+      await expect(loginUser(mockReq, mockRes, mockNext)).rejects.toThrow(ApiError);
+      expect(mockNext).toHaveBeenCalled(); // Ensure next is called for errors
     });
   });
 });

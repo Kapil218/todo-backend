@@ -1,5 +1,5 @@
 /** @type {import('jest').Config} */
-const config = {
+module.exports = {
   transform: {
     "^.+\\.js$": ["babel-jest", { configFile: "./babel.config.js" }],
   },
@@ -14,5 +14,3 @@ const config = {
   extensionsToTreatAsEsm: [".js"],
   testTimeout: 10000
 };
-
-export default config;

@@ -12,7 +12,7 @@ import { hashValue, compareValue } from "../utils/bcrypt.js";
 // REGISTER
 // --------------------------------------------------------------------------------------------------------------------------------------
 
-const registerUser = asyncHandler(async (req, res) => {
+const registerUser = asyncHandler(async (req, res, next) => {
   const name = (req.body.name || "").trim();
   const email = (req.body.email || "").trim().toLowerCase();
   const password = (req.body.password || "").trim();
@@ -49,7 +49,7 @@ const registerUser = asyncHandler(async (req, res) => {
 // LOGIN
 // --------------------------------------------------------------------------------------------------------------------------------------
 
-const loginUser = asyncHandler(async (req, res) => {
+const loginUser = asyncHandler(async (req, res, next) => {
   const email = (req.body.email || "").trim().toLowerCase();
   const password = (req.body.password || "").trim();
 
@@ -111,7 +111,7 @@ const loginUser = asyncHandler(async (req, res) => {
 // LOGOUT
 // --------------------------------------------------------------------------------------------------------------------------------------
 
-const logoutUser = asyncHandler(async (req, res) => {
+const logoutUser = asyncHandler(async (req, res, next) => {
   if (!req.user?.id) {
     throw new ApiError(400, "User not authenticated");
   }

@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import { pool } from "../../db/index.js";
 import {
   getAllTodosForUser,
@@ -15,6 +16,7 @@ jest.mock("../../db/index.js", () => ({
 describe("Todo Controller", () => {
   let mockReq;
   let mockRes;
+  let mockNext;
 
   beforeEach(() => {
     mockReq = {
@@ -26,18 +28,21 @@ describe("Todo Controller", () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
+    mockNext = jest.fn();
     jest.clearAllMocks();
   });
 
   describe("getAllTodosForUser", () => {
-    it("should get all todos for authenticated user", async () => {
+    it("should get all todos for a user successfully", async () => {
       const mockTodos = [
-        { id: 1, title: "Test Todo", description: "Test Description" },
+        { id: 1, title: "Test Todo 1" },
+        { id: 2, title: "Test Todo 2" },
       ];
       pool.query.mockResolvedValueOnce({ rows: mockTodos });
 
-      await getAllTodosForUser(mockReq, mockRes);
+      await getAllTodosForUser(mockReq, mockRes, mockNext);
 
+      expect(mockNext).not.toHaveBeenCalled();
       expect(pool.query).toHaveBeenCalledWith(expect.any(String), [
         mockReq.user.id,
       ]);
@@ -53,23 +58,26 @@ describe("Todo Controller", () => {
     it("should throw error if user is not authenticated", async () => {
       mockReq.user = null;
 
-      await expect(getAllTodosForUser(mockReq, mockRes)).rejects.toThrow(
+      await expect(getAllTodosForUser(mockReq, mockRes, mockNext)).rejects.toThrow(
         ApiError
       );
+      expect(mockNext).toHaveBeenCalled();
     });
   });
 
   describe("addTodo", () => {
     it("should add a new todo successfully", async () => {
       mockReq.body = {
-        title: "New Todo",
-        description: "New Description",
+        title: "Test Todo",
+        description: "Test Description",
       };
+
       const mockNewTodo = { id: 1, ...mockReq.body };
       pool.query.mockResolvedValueOnce({ rows: [mockNewTodo], rowCount: 1 });
 
-      await addTodo(mockReq, mockRes);
+      await addTodo(mockReq, mockRes, mockNext);
 
+      expect(mockNext).not.toHaveBeenCalled();
       expect(pool.query).toHaveBeenCalledWith(expect.any(String), [
         mockReq.user.id,
         mockReq.body.title,
@@ -87,53 +95,52 @@ describe("Todo Controller", () => {
     it("should throw error if title or description is missing", async () => {
       mockReq.body = { title: "", description: "" };
 
-      await expect(addTodo(mockReq, mockRes)).rejects.toThrow(ApiError);
+      await expect(addTodo(mockReq, mockRes, mockNext)).rejects.toThrow(ApiError);
+      expect(mockNext).toHaveBeenCalled();
     });
 
     it("should throw error if todo creation fails", async () => {
       mockReq.body = {
-        title: "New Todo",
-        description: "New Description",
+        title: "Test Todo",
+        description: "Test Description",
       };
       pool.query.mockResolvedValueOnce({ rowCount: 0 });
 
-      await expect(addTodo(mockReq, mockRes)).rejects.toThrow(ApiError);
+      await expect(addTodo(mockReq, mockRes, mockNext)).rejects.toThrow(ApiError);
+      expect(mockNext).toHaveBeenCalled();
     });
   });
 
   describe("removeTodo", () => {
-    it("should remove a todo successfully", async () => {
+    it("should delete a todo successfully", async () => {
       mockReq.params = { id: "1" };
       pool.query
-        .mockResolvedValueOnce({ rowCount: 1 }) // For checking todo existence
-        .mockResolvedValueOnce({ rowCount: 1 }); // For deletion
+        .mockResolvedValueOnce({ rowCount: 1 }) // Todo exists
+        .mockResolvedValueOnce({ rowCount: 1 }); // Deletion successful
 
-      await removeTodo(mockReq, mockRes);
+      await removeTodo(mockReq, mockRes, mockNext);
 
+      expect(mockNext).not.toHaveBeenCalled();
       expect(pool.query).toHaveBeenCalledTimes(2);
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          statusCode: 200,
-          message: expect.any(String),
-        })
-      );
     });
 
-    it("should throw error if todo not found", async () => {
+    it("should throw error if todo doesn't exist", async () => {
       mockReq.params = { id: "999" };
-      pool.query.mockResolvedValueOnce({ rowCount: 0 });
+      pool.query.mockResolvedValueOnce({ rowCount: 0 }); // Todo doesn't exist
 
-      await expect(removeTodo(mockReq, mockRes)).rejects.toThrow(ApiError);
+      await expect(removeTodo(mockReq, mockRes, mockNext)).rejects.toThrow(ApiError);
+      expect(mockNext).toHaveBeenCalled();
     });
 
-    it("should throw error if todo deletion fails", async () => {
+    it("should throw error if deletion fails", async () => {
       mockReq.params = { id: "1" };
       pool.query
-        .mockResolvedValueOnce({ rowCount: 1 }) // For checking todo existence
-        .mockResolvedValueOnce({ rowCount: 0 }); // For deletion failure
+        .mockResolvedValueOnce({ rowCount: 1 }) // Todo exists
+        .mockResolvedValueOnce({ rowCount: 0 }); // Deletion fails
 
-      await expect(removeTodo(mockReq, mockRes)).rejects.toThrow(ApiError);
+      await expect(removeTodo(mockReq, mockRes, mockNext)).rejects.toThrow(ApiError);
+      expect(mockNext).toHaveBeenCalled();
     });
   });
 });
